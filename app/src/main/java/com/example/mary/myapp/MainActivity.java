@@ -5,14 +5,26 @@ import android.os.Bundle;
 import android.text.Editable;
 import android.text.TextWatcher;
 import android.view.View;
+import android.view.ViewGroup;
+import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.EditText;
+import android.widget.ListView;
 import android.widget.TabHost;
+import android.widget.TextView;
 import android.widget.Toast;
+
+import org.w3c.dom.Text;
+
+import java.util.ArrayList;
+import java.util.List;
+import java.util.jar.Manifest;
 
 public class MainActivity extends AppCompatActivity {
 
     EditText nameTxt, phoneTxt, emailTxt, companyTxt;
+    List<Contact> Contacts = new ArrayList<>();
+    ListView contactListView;
 
     @Override
 
@@ -24,6 +36,7 @@ public class MainActivity extends AppCompatActivity {
         phoneTxt = (EditText) findViewById(R.id.txtPhone);
         emailTxt = (EditText) findViewById(R.id.txtEmail);
         companyTxt = (EditText) findViewById(R.id.txtCompany);
+        contactListView = (ListView) findViewById(R.id.listView);
 
         TabHost tabHost = (TabHost) findViewById(R.id.tabHost);
         tabHost.setup();
@@ -43,7 +56,9 @@ public class MainActivity extends AppCompatActivity {
         addBtn.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                Toast.makeText(getApplicationContext(), "Nice!", Toast.LENGTH_SHORT).show();
+                addContact(nameTxt.getText().toString(), phoneTxt.getText().toString(), emailTxt.getText().toString(), companyTxt.getText().toString());
+                populateList();
+                Toast.makeText(getApplicationContext(), nameTxt.getText().toString() + " has been added", Toast.LENGTH_SHORT).show();
             }
         });
 
@@ -63,6 +78,41 @@ public class MainActivity extends AppCompatActivity {
 
             }
         });
+    }
+
+    private void populateList(){
+        ArrayAdapter<Contact> adapter = new ContactListAdapter();
+        contactListView.setAdapter(adapter);
+    }
+
+    private void addContact(String name, String phone, String email, String company){
+        Contacts.add(new Contact(name, phone, email, company));
+    }
+
+    private class ContactListAdapter extends ArrayAdapter<Contact>{
+        public ContactListAdapter(){
+            super(MainActivity.this, R.layout.listview_item, Contacts);
+        }
+
+        @Override
+        public View getView(int position, View view, ViewGroup parent){
+            if (view == null)
+                view = getLayoutInflater().inflate(R.layout.listview_item, parent, false);
+            Contact currentContact = Contacts.get(position);
+
+            TextView name = (TextView) view.findViewById(R.id.contactName);
+            name.setText(currentContact.getName());
+
+            TextView phone = (TextView) view.findViewById(R.id.phoneNumber);
+            phone.setText(currentContact.getPhone());
+
+            TextView email = (TextView) view.findViewById(R.id.emailAdress);
+            email.setText(currentContact.getEmail());
+
+            TextView company = (TextView) view.findViewById(R.id.companyName);
+            company.setText(currentContact.getCompany());
+            return view;
+        }
     }
 
     public void onClick(View view) {
