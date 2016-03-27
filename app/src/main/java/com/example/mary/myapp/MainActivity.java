@@ -1,5 +1,7 @@
 package com.example.mary.myapp;
 
+import android.content.Intent;
+import android.net.Uri;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.text.Editable;
@@ -9,6 +11,7 @@ import android.view.ViewGroup;
 import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.EditText;
+import android.widget.ImageView;
 import android.widget.ListView;
 import android.widget.TabHost;
 import android.widget.TextView;
@@ -25,6 +28,8 @@ public class MainActivity extends AppCompatActivity {
     EditText nameTxt, phoneTxt, emailTxt, companyTxt;
     List<Contact> Contacts = new ArrayList<>();
     ListView contactListView;
+    ImageView contactImageImgView;
+    Uri imageUri = null;
 
     @Override
 
@@ -37,6 +42,7 @@ public class MainActivity extends AppCompatActivity {
         emailTxt = (EditText) findViewById(R.id.txtEmail);
         companyTxt = (EditText) findViewById(R.id.txtCompany);
         contactListView = (ListView) findViewById(R.id.listView);
+        contactImageImgView = (ImageView) findViewById(R.id.imgViewContactImage);
 
         TabHost tabHost = (TabHost) findViewById(R.id.tabHost);
         tabHost.setup();
@@ -56,7 +62,7 @@ public class MainActivity extends AppCompatActivity {
         addBtn.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                addContact(nameTxt.getText().toString(), phoneTxt.getText().toString(), emailTxt.getText().toString(), companyTxt.getText().toString());
+                Contacts.add(new Contact (nameTxt.getText().toString(), phoneTxt.getText().toString(), emailTxt.getText().toString(), companyTxt.getText().toString(), imageUri));
                 populateList();
                 Toast.makeText(getApplicationContext(), nameTxt.getText().toString() + " has been added", Toast.LENGTH_SHORT).show();
             }
@@ -78,15 +84,31 @@ public class MainActivity extends AppCompatActivity {
 
             }
         });
+
+        contactImageImgView.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                Intent intent = new Intent();
+                intent.setType("image/*");
+                intent.setAction(Intent.ACTION_GET_CONTENT);
+                startActivityForResult(Intent.createChooser(intent, "Select Contact Image"), 1);
+
+            }
+        });
+    }
+
+    public void onActivityResult(int reqCode, int resCode, Intent data) {
+        if (resCode == RESULT_OK) {
+            if (reqCode == 1) {
+                imageUri = data.getData();
+                contactImageImgView.setImageURI(data.getData());
+            }
+        }
     }
 
     private void populateList(){
         ArrayAdapter<Contact> adapter = new ContactListAdapter();
         contactListView.setAdapter(adapter);
-    }
-
-    private void addContact(String name, String phone, String email, String company){
-        Contacts.add(new Contact(name, phone, email, company));
     }
 
     private class ContactListAdapter extends ArrayAdapter<Contact>{
@@ -111,6 +133,10 @@ public class MainActivity extends AppCompatActivity {
 
             TextView company = (TextView) view.findViewById(R.id.companyName);
             company.setText(currentContact.getCompany());
+
+            ImageView ivContactImage = (ImageView) view.findViewById(R.id.ivContactImage);
+            ivContactImage.setImageURI(currentContact.get_imageURI());
+
             return view;
         }
     }
